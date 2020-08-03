@@ -39,6 +39,84 @@ ng serve --open
 # http://localhost:4200/
 ```
 
+# 模板语法
+
+## 类绑定
+
+### 单个类绑定 
+
+要创建单个类的绑定，请使用 `class` 前缀，紧跟一个点（`.`），再跟上 CSS 类名 
+
+```html
+<!-- 当绑定表达式hasFoo为真值的时候，Angular 就会加上这个类，为假值则会移除，但 undefined 是假值中的例外 -->
+<div [class.foo]="hasFoo">test</div>
+```
+
+### 多个类绑定 
+
+要想创建多个类的绑定，请使用通用的 `[class]` 形式来绑定类，而不要带点 
+
+```html
+<!--通过string绑定了hasFoo和selected两个类-->
+<div [class]="hasFoo selected">test</div>
+
+<!--通过Object绑定hasFoo和selected两个类，true添加hasFoo类，false移除selected类-->
+<div [class]="{hasFoo: true, selected: false}">test</div>
+
+<!--通过数组绑定了hasFoo和selected两个类-->
+<div [class]="['hasFoo', 'selected']">test</div>
+```
+
+## 样式绑定
+
+通过**样式绑定**来动态设置样式 
+
+### 单个样式绑定
+
+要想创建单个样式的绑定，请以 `style` 前缀开头，紧跟一个点（`.`），再跟着 CSS 样式的属性名 
+
+```html
+<!--
+	单一样式绑定，设置width，
+	属性widthValue为string/null/undefined，
+	eg：widthValue = '100px'
+-->
+<div [style.width]="widthValue">test</div>
+
+<!--
+	带单位的单一样式绑定，设置width，
+	属性widthValue为number/null/undefined
+	eg: widthValue = 100
+-->
+<div [style.width.px]="widthValue">test</div>
+
+
+```
+
+### 多个样式绑定
+
+要切换多个样式，直接绑定到 `[style]` 属性而不用点 
+
+```html
+<!--
+	styleExpr为string类型，
+	eg: styleExpr = "width: 100px; height: 100px"
+-->
+<div [style]="styleExpr">test</div>
+
+<!--
+	styleExpr为Obejct类型，
+	eg: styleExpr = {width: '100px', height: '100px'}
+-->
+<div [style]="styleExpr">test</div>
+
+<!--
+	styleExpr为Array类型，
+	eg: styleExpr = ['width', '100px']
+-->
+<div [style]="styleExpr">test</div>
+```
+
 # Angular API
 
 ## @Input
@@ -93,6 +171,12 @@ ng generate service services/common
 [`*ngFor`](https://angular.cn/guide/template-syntax#ngFor) 是一个 Angular 的复写器（repeater）指令。 它会为列表中的每项数据复写它的宿主元素。 
 
 不要忘了 `ngFor` 前面的星号（`*`），它是该语法中的关键部分。 
+
+##  *ngIf
+
+ `  *ngIf`  是一个 Angular 的判断指令，值为true或false。如果页面上使用某个属性是undefined，控制台会报错，页面可能显示异常。此时可以通过 `  *ngIf` 对属性进行判断。
+
+ `  *ngIf`  判断的值为false，那么会 从 DOM 中移除了 `  *ngIf`  的宿主元素。
 
 
 # 注意
