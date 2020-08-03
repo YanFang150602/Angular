@@ -131,9 +131,9 @@ npm ERR!     C:\Users\彦博\AppData\Roaming\npm-cache\_logs\2020-08-02T01_13_05
 解决
 
 ```shell
-npm cache clean --force
+$ npm cache clean --force
 # 这回 npm install成功
-npm install
+$ npm install
 npm WARN deprecated chokidar@2.1.8: Chokidar 2 will break on node v14+. Upgrade to chokidar 3 with 15x less dependencies.
 npm WARN deprecated request@2.88.2: request has been deprecated, see https://github.com/request/request/issues/3142
 npm WARN deprecated fsevents@1.2.13: fsevents 1 will break on node v14+ and could be using insecure binaries. Upgrade to fsevents 2.
