@@ -32,6 +32,25 @@ ng generate component components/header
 # UPDATE src/app/app.module.ts (572 bytes)
 ```
 
+## 新建服务service
+
+```shell
+ng generate service services/common
+# 命令执行后，显示：
+# CREATE src/app/services/common.service.spec.ts (357 bytes)
+# CREATE src/app/services/common.service.ts (135 bytes)
+```
+
+## 新建模块module
+
+```shell
+# --flat 把这个文件app-routing.module.ts放进了 src/app 中，而不是单独的目录中。
+# --module=app 告诉 CLI 把它注册到 AppModule 的 imports 数组中。
+ng generate module app-routing --flat --module=app
+```
+
+
+
 ## 启动项目
 
 ```shell
@@ -155,14 +174,23 @@ parentMsg: string = '我来自Parent Component的！';
 
 ## @Output
 
-## 新建服务service
+## @Injectable()  
 
-```shell
-ng generate service services/common
-# 命令执行后，显示：
-# CREATE src/app/services/common.service.spec.ts (357 bytes)
-# CREATE src/app/services/common.service.ts (135 bytes)
+标记性元数据，表示一个类可以由 `Injector` 进行创建。 @Injectable()  标记的类将会提供一个可注入的服务 
+
+`@Injectable()` 装饰器会接受该服务的元数据对象，就像 `@Component()` 对组件类的作用一样。 
+
+必须先注册一个*服务提供者*，来让服务类在依赖注入系统中可用，Angular 才能把它注入到组件中。所谓服务提供者就是某种可用来创建或交付一个服务的东西；在这里，它通过实例化 服务类，来提供该服务。 
+
+为了确保服务类可以提供该服务，就要使用*注入器*来注册它。注入器是一个对象，负责当应用要求获取它的实例时选择和注入该提供者。默认情况下，Angular CLI 命令 `ng generate service` 会通过给 `@Injectable()` 装饰器添加 `providedIn: 'root'` 元数据的形式，用*根注入器*将服务注册成为提供者。
+
+```ts
+@Injectable({
+  providedIn: 'root',
+})
 ```
+
+当在顶层提供该服务时，Angular 就会为服务类创建一个单一的、共享的实例，并把它注入到任何想要它的类上。 在 `@Injectable` 元数据中注册该提供者，还能允许 Angular 通过移除那些完全没有用过的服务来进行优化。 
 
 # 内部指令
 
@@ -178,6 +206,211 @@ ng generate service services/common
 
  `  *ngIf`  判断的值为false，那么会 从 DOM 中移除了 `  *ngIf`  的宿主元素。
 
+# 路由
+
+## 添加 `AppRoutingModule`
+
+在 Angular 中，最好在一个独立的顶层模块中加载和配置路由器，它专注于路由功能，然后由根模块 `AppModule` 导入它 
+
+按照惯例，在用CLI创建项目，选择路由是，这个模块类的名字叫做 `AppRoutingModule`，并且位于 `src/app` 下的 `app-routing.module.ts` 文件中。 
+
+```ts
+// src/app/app-routing.module.ts
+
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+
+const routes: Routes = [];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+
+### 路由
+
+*Routes* 告诉路由器，当用户单击链接或将 URL 粘贴进浏览器地址栏时要显示哪个视图 
+
+```ts
+// src/app/app-routing.module.ts
+
+/* ... */
+
+const routes: Routes = [
+  { path: 'heroes', component: HeroesComponent }
+];
+
+/* ... */
+```
+
+### [`RouterModule.forRoot()`](https://angular.cn/tutorial/toh-pt5#routermoduleforroot) 
+
+`@NgModule` 元数据会初始化路由器，并开始监听浏览器地址的变化。 
+
+将 `RouterModule` 添加到 `AppRoutingModule` 的 `imports` 数组中，同时通过调用 `RouterModule.forRoot()` 来用这些 `routes` 配置 `AppRoutingModule` 
+
+```ts
+// src/app/app-routing.module.ts
+/* ... */
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+
+这个方法之所以叫 `forRoot()`，是因为你要在应用的顶层配置这个路由器。 `forRoot()` 方法会提供路由所需的服务提供者和指令，还会基于浏览器的当前 URL 执行首次导航。 
+
+## 添加路由出口 `RouterOutlet`
+
+打开 `AppComponent` 的模板，添加 `<router-outlet>` 元素。 `<router-outlet>` 会告诉路由器要在哪里显示路由的视图。 
+
+```html
+<!--src/app/app.component.html-->
+
+<h1>{{title}}</h1>
+<!--诉路由器要在哪里显示路由的视图-->
+<router-outlet></router-outlet>
+```
+
+## 添加路由链接 (`routerLink`)
+
+理想情况下，用户应该能通过点击链接进行导航，而不用被迫把路由的 URL 粘贴到地址栏。
+
+添加一个 `<nav>` 元素，并在其中放一个链接 `<a>` 元素，当点击它时，就会触发一个到组件的导航。 修改过的 `AppComponent` 模板如下：
+
+```html
+<!--src/app/app.component.html-->
+
+<h1>{{title}}</h1>
+<nav>
+    <a routerLink="/heroes">Heroes</a> &nbsp;&nbsp;
+</nav>
+<!--诉路由器要在哪里显示路由的视图-->
+<router-outlet></router-outlet>
+```
+
+[`routerLink` 属性](https://angular.cn/tutorial/toh-pt5#routerlink)的值为 `"/heroes"`，路由器会用它来匹配出指向 `HeroesComponent` 的路由。 `routerLink` 是 [`RouterLink` 指令](https://angular.cn/api/router/RouterLink)的选择器，它会把用户的点击转换为路由器的导航操作。 它是 `RouterModule` 中的另一个公共指令。
+
+组件模板里也可以使用` routerLink ` ，修改过的` DashboardComponent `模板如下：
+
+```html
+<!-- src/app/dashboard/dashboard.component.html -->
+
+<h3>Top Heroes</h3>
+<div class="grid grid-pad">
+    <a *ngFor="let hero of heroes" class="col-1-4" >
+        <div class="module hero">
+            <a routerLink="/detail/{{hero.id}}"><h4>{{hero.name}}</h4></a>
+        </div>
+    </a>
+</div>
+```
+
+## 添加默认路由
+
+当应用启动时，浏览器的地址栏指向了网站的根路径。 它没有匹配到任何现存路由，因此路由器也不会导航到任何地方。 `<router-outlet>` 下方是空白的。 
+
+```ts
+// src/app/app-routing.module.ts
+
+/* ... */
+
+const routes: Routes = [{
+    path: '', // 默认
+    redirectTo: '/dashboard',
+    pathMatch: 'full'
+}, {
+    path: 'heroes',
+    component: HeroesComponent
+}, {
+    path: 'messages',
+    component: MessagesComponent
+}, {
+    path: 'dashboard',
+    component: DashboardComponent
+}, {
+    path: 'detail/:id',
+    component: HeroDetailComponent
+}];
+
+/* ... */
+```
+
+## 组件支持路由
+
+组件里引入ActivatedRoute、Location
+
+```ts
+// src/app/hero-detail/hero-detail.component.ts
+
+import { ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
+
+import { HeroService }  from '../hero.service';
+
+/* ... */
+
+export class HeroDetailComponent {
+    constructor(
+  		private route: ActivatedRoute,
+  		private heroService: HeroService,
+  		private location: Location
+	) {}
+    
+    /* ... */
+}
+```
+
+把 `ActivatedRoute`、 `Location` 服务注入到构造函数中 ，将它们的值保存到私有变量里 ，只在组件里使用。
+
+[`ActivatedRoute`](https://angular.cn/api/router/ActivatedRoute) 保存着到这个组件实例的路由信息， 这个组件对从 URL 中提取的路由参数感兴趣。  
+
+[`location`](https://angular.cn/api/common/Location) 是一个 Angular 的服务，用来与浏览器打交道。 
+
+### 从路由中提取参数
+
+```ts
+// src/app/hero-detail/hero-detail.component.ts
+
+/* ... */
+
+ngOnInit(): void {
+  this.getHero();
+}
+
+getHero(): void {
+  // +'123'可以将字符串123转换数字123
+  const id = +this.route.snapshot.paramMap.get('id');
+  this.heroService.getHero(id)
+    .subscribe(hero => this.hero = hero);
+}
+
+/* ... */
+```
+
+`route.snapshot` 是一个路由信息的静态快照，抓取自组件刚刚创建完毕之后。 
+
+`paramMap` 是一个从 URL 中提取的路由参数值的字典。 `"id"` 对应的值就是要从URL里获取的 `id`。 
+
+路由参数总会是字符串。 JavaScript 的 (+) 操作符会把字符串转换成数字 
+
+### 原路返回
+
+```ts
+// src/app/hero-detail/hero-detail.component.ts
+
+/* ... */
+
+goBack(): void {
+  this.location.back();
+}
+
+/* ... */
+```
 
 # 注意
 
